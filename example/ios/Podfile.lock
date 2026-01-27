@@ -1,0 +1,41 @@
+PODS:
+  - Flutter (1.0.0)
+  - foursquare_movement_sdk (0.0.1):
+    - Flutter
+    - MovementSdk (~> 4.0)
+  - integration_test (0.0.1):
+    - Flutter
+  - MovementSdk (4.0.5)
+  - permission_handler_apple (9.3.0):
+    - Flutter
+
+DEPENDENCIES:
+  - Flutter (from `Flutter`)
+  - foursquare_movement_sdk (from `.symlinks/plugins/foursquare_movement_sdk/ios`)
+  - integration_test (from `.symlinks/plugins/integration_test/ios`)
+  - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
+
+SPEC REPOS:
+  trunk:
+    - MovementSdk
+
+EXTERNAL SOURCES:
+  Flutter:
+    :path: Flutter
+  foursquare_movement_sdk:
+    :path: ".symlinks/plugins/foursquare_movement_sdk/ios"
+  integration_test:
+    :path: ".symlinks/plugins/integration_test/ios"
+  permission_handler_apple:
+    :path: ".symlinks/plugins/permission_handler_apple/ios"
+
+SPEC CHECKSUMS:
+  Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
+  foursquare_movement_sdk: 27632999553dbc070081768cdcf8255bbdfdd83b
+  integration_test: 4a889634ef21a45d28d50d622cf412dc6d9f586e
+  MovementSdk: 1536c92e9d3de836ac163e7033a1984da3945939
+  permission_handler_apple: 4ed2196e43d0651e8ff7ca3483a069d469701f2d
+
+PODFILE CHECKSUM: a7e395ce53b2342dcf45bb73633a6922789b4594
+
+COCOAPODS: 1.16.2
