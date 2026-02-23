@@ -292,6 +292,53 @@ void main() {
     });
   });
 
+  group('FSQDebugLogEntry', () {
+    test('can be constructed with all fields', () {
+      final entry = FSQDebugLogEntry(
+        timestamp: 1708675200000,
+        level: 'info',
+        type: 'network',
+        message: 'HTTP request completed',
+      );
+      expect(entry.timestamp, 1708675200000);
+      expect(entry.level, 'info');
+      expect(entry.type, 'network');
+      expect(entry.message, 'HTTP request completed');
+    });
+
+    test('equality for identical fields', () {
+      final a = FSQDebugLogEntry(
+        timestamp: 1000,
+        level: 'debug',
+        type: 'general',
+        message: 'test',
+      );
+      final b = FSQDebugLogEntry(
+        timestamp: 1000,
+        level: 'debug',
+        type: 'general',
+        message: 'test',
+      );
+      expect(a, equals(b));
+    });
+
+    test('inequality for different fields', () {
+      final a = FSQDebugLogEntry(
+        timestamp: 1000,
+        level: 'info',
+        type: 'network',
+        message: 'msg1',
+      );
+      final b = FSQDebugLogEntry(
+        timestamp: 2000,
+        level: 'error',
+        type: 'location',
+        message: 'msg2',
+      );
+      expect(a, isNot(equals(b)));
+    });
+  });
+
   group('FSQCurrentLocation', () {
     test('can be constructed', () {
       final location = FSQLocation(latitude: 40.0, longitude: -74.0);

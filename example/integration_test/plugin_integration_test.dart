@@ -141,5 +141,20 @@ void main() {
       expect(geofenceStream, isA<Stream<List<FSQGeofenceEvent>>>());
       expect(geofenceStream.isBroadcast, isTrue);
     });
+
+    test('getDebugLogs returns list', () async {
+      final logs = await MovementSdk.getDebugLogs();
+      expect(logs, isA<List<FSQDebugLogEntry>>());
+    });
+
+    test('clearDebugLogs does not throw', () async {
+      await expectLater(MovementSdk.clearDebugLogs(), completes);
+    });
+
+    test('clearDebugLogs then getDebugLogs returns empty', () async {
+      await MovementSdk.clearDebugLogs();
+      final logs = await MovementSdk.getDebugLogs();
+      expect(logs, isEmpty);
+    });
   });
 }

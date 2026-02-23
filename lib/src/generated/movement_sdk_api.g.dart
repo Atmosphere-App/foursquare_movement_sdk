@@ -681,6 +681,68 @@ class FSQCurrentLocation {
 ;
 }
 
+/// A single entry from the native SDK's debug log buffer.
+class FSQDebugLogEntry {
+  FSQDebugLogEntry({
+    required this.timestamp,
+    required this.level,
+    required this.type,
+    required this.message,
+  });
+
+  /// Milliseconds since epoch when the log was recorded.
+  int timestamp;
+
+  /// Severity: "debug", "info", "warn", or "error".
+  String level;
+
+  /// Log source category. iOS provides granular types ("network", "location",
+  /// "geofence", etc.); Android always returns "general".
+  String type;
+
+  /// Human-readable description of the event.
+  String message;
+
+  List<Object?> _toList() {
+    return <Object?>[
+      timestamp,
+      level,
+      type,
+      message,
+    ];
+  }
+
+  Object encode() {
+    return _toList();  }
+
+  static FSQDebugLogEntry decode(Object result) {
+    result as List<Object?>;
+    return FSQDebugLogEntry(
+      timestamp: result[0]! as int,
+      level: result[1]! as String,
+      type: result[2]! as String,
+      message: result[3]! as String,
+    );
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  bool operator ==(Object other) {
+    if (other is! FSQDebugLogEntry || other.runtimeType != runtimeType) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
+    return _deepEquals(encode(), other.encode());
+  }
+
+  @override
+  // ignore: avoid_equals_and_hash_code_on_mutable_classes
+  int get hashCode => Object.hashAll(_toList())
+;
+}
+
 
 class _PigeonCodec extends StandardMessageCodec {
   const _PigeonCodec();
@@ -728,6 +790,9 @@ class _PigeonCodec extends StandardMessageCodec {
     }    else if (value is FSQCurrentLocation) {
       buffer.putUint8(141);
       writeValue(buffer, value.encode());
+    }    else if (value is FSQDebugLogEntry) {
+      buffer.putUint8(142);
+      writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
     }
@@ -765,6 +830,8 @@ class _PigeonCodec extends StandardMessageCodec {
         return FSQGeofenceEvent.decode(readValue(buffer)!);
       case 141: 
         return FSQCurrentLocation.decode(readValue(buffer)!);
+      case 142: 
+        return FSQDebugLogEntry.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
     }
@@ -1084,6 +1151,60 @@ class MovementSdkHostApi {
       );
     } else {
       return (pigeonVar_replyList[0] as FSQVisit?);
+    }
+  }
+
+  /// Returns recent debug log entries collected by the native SDK.
+  ///
+  /// Requires debug logging to be enabled natively
+  /// (`isDebugLogsEnabled` on iOS, `setEnableDebugLogs` on Android).
+  Future<List<FSQDebugLogEntry>> getDebugLogs() async {
+    final pigeonVar_channelName = 'dev.flutter.pigeon.foursquare_movement_sdk.MovementSdkHostApi.getDebugLogs$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+    if (pigeonVar_replyList == null) {
+      throw _createConnectionError(pigeonVar_channelName);
+    } else if (pigeonVar_replyList.length > 1) {
+      throw PlatformException(
+        code: pigeonVar_replyList[0]! as String,
+        message: pigeonVar_replyList[1] as String?,
+        details: pigeonVar_replyList[2],
+      );
+    } else if (pigeonVar_replyList[0] == null) {
+      throw PlatformException(
+        code: 'null-error',
+        message: 'Host platform returned null value for non-null return value.',
+      );
+    } else {
+      return (pigeonVar_replyList[0] as List<Object?>?)!.cast<FSQDebugLogEntry>();
+    }
+  }
+
+  /// Clears the native SDK's debug log buffer.
+  Future<void> clearDebugLogs() async {
+    final pigeonVar_channelName = 'dev.flutter.pigeon.foursquare_movement_sdk.MovementSdkHostApi.clearDebugLogs$pigeonVar_messageChannelSuffix';
+    final pigeonVar_channel = BasicMessageChannel<Object?>(
+      pigeonVar_channelName,
+      pigeonChannelCodec,
+      binaryMessenger: pigeonVar_binaryMessenger,
+    );
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
+    final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
+    if (pigeonVar_replyList == null) {
+      throw _createConnectionError(pigeonVar_channelName);
+    } else if (pigeonVar_replyList.length > 1) {
+      throw PlatformException(
+        code: pigeonVar_replyList[0]! as String,
+        message: pigeonVar_replyList[1] as String?,
+        details: pigeonVar_replyList[2],
+      );
+    } else {
+      return;
     }
   }
 }

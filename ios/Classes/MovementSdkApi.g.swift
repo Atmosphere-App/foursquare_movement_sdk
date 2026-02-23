@@ -585,6 +585,50 @@ struct FSQCurrentLocation: Hashable {
   }
 }
 
+/// A single entry from the native SDK's debug log buffer.
+///
+/// Generated class from Pigeon that represents data sent in messages.
+struct FSQDebugLogEntry: Hashable {
+  /// Milliseconds since epoch when the log was recorded.
+  var timestamp: Int64
+  /// Severity: "debug", "info", "warn", or "error".
+  var level: String
+  /// Log source category. iOS provides granular types ("network", "location",
+  /// "geofence", etc.); Android always returns "general".
+  var type: String
+  /// Human-readable description of the event.
+  var message: String
+
+
+  // swift-format-ignore: AlwaysUseLowerCamelCase
+  static func fromList(_ pigeonVar_list: [Any?]) -> FSQDebugLogEntry? {
+    let timestamp = pigeonVar_list[0] as! Int64
+    let level = pigeonVar_list[1] as! String
+    let type = pigeonVar_list[2] as! String
+    let message = pigeonVar_list[3] as! String
+
+    return FSQDebugLogEntry(
+      timestamp: timestamp,
+      level: level,
+      type: type,
+      message: message
+    )
+  }
+  func toList() -> [Any?] {
+    return [
+      timestamp,
+      level,
+      type,
+      message,
+    ]
+  }
+  static func == (lhs: FSQDebugLogEntry, rhs: FSQDebugLogEntry) -> Bool {
+    return deepEqualsMovementSdkApi(lhs.toList(), rhs.toList())  }
+  func hash(into hasher: inout Hasher) {
+    deepHashMovementSdkApi(value: toList(), hasher: &hasher)
+  }
+}
+
 private class MovementSdkApiPigeonCodecReader: FlutterStandardReader {
   override func readValue(ofType type: UInt8) -> Any? {
     switch type {
@@ -626,6 +670,8 @@ private class MovementSdkApiPigeonCodecReader: FlutterStandardReader {
       return FSQGeofenceEvent.fromList(self.readValue() as! [Any?])
     case 141:
       return FSQCurrentLocation.fromList(self.readValue() as! [Any?])
+    case 142:
+      return FSQDebugLogEntry.fromList(self.readValue() as! [Any?])
     default:
       return super.readValue(ofType: type)
     }
@@ -672,6 +718,9 @@ private class MovementSdkApiPigeonCodecWriter: FlutterStandardWriter {
       super.writeValue(value.toList())
     } else if let value = value as? FSQCurrentLocation {
       super.writeByte(141)
+      super.writeValue(value.toList())
+    } else if let value = value as? FSQDebugLogEntry {
+      super.writeByte(142)
       super.writeValue(value.toList())
     } else {
       super.writeValue(value)
@@ -728,6 +777,13 @@ protocol MovementSdkHostApi {
   func clearAllData() throws
   /// Returns the currently active visit, or null if there is no active visit.
   func getActiveVisit(completion: @escaping (Result<FSQVisit?, Error>) -> Void)
+  /// Returns recent debug log entries collected by the native SDK.
+  ///
+  /// Requires debug logging to be enabled natively
+  /// (`isDebugLogsEnabled` on iOS, `setEnableDebugLogs` on Android).
+  func getDebugLogs(completion: @escaping (Result<[FSQDebugLogEntry], Error>) -> Void)
+  /// Clears the native SDK's debug log buffer.
+  func clearDebugLogs() throws
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -927,6 +983,39 @@ class MovementSdkHostApiSetup {
       }
     } else {
       getActiveVisitChannel.setMessageHandler(nil)
+    }
+    /// Returns recent debug log entries collected by the native SDK.
+    ///
+    /// Requires debug logging to be enabled natively
+    /// (`isDebugLogsEnabled` on iOS, `setEnableDebugLogs` on Android).
+    let getDebugLogsChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.foursquare_movement_sdk.MovementSdkHostApi.getDebugLogs\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      getDebugLogsChannel.setMessageHandler { _, reply in
+        api.getDebugLogs { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      getDebugLogsChannel.setMessageHandler(nil)
+    }
+    /// Clears the native SDK's debug log buffer.
+    let clearDebugLogsChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.foursquare_movement_sdk.MovementSdkHostApi.clearDebugLogs\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      clearDebugLogsChannel.setMessageHandler { _, reply in
+        do {
+          try api.clearDebugLogs()
+          reply(wrapResult(nil))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      clearDebugLogsChannel.setMessageHandler(nil)
     }
   }
 }

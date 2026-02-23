@@ -21,6 +21,7 @@ class _MyAppState extends State<MyApp> {
   bool? _isEnabled;
   String? _error;
   bool _permissionGranted = false;
+  List<FSQDebugLogEntry>? _debugLogs;
 
   @override
   void initState() {
@@ -93,6 +94,18 @@ class _MyAppState extends State<MyApp> {
     }
   }
 
+  Future<void> _getDebugLogs() async {
+    try {
+      final logs = await MovementSdk.getDebugLogs();
+      setState(() {
+        _debugLogs = logs;
+        _error = null;
+      });
+    } catch (e) {
+      _showError('Failed to get debug logs: $e');
+    }
+  }
+
   Future<void> _getCurrentLocation() async {
     if (!_permissionGranted) {
       await _requestPermissions();
@@ -137,12 +150,23 @@ class _MyAppState extends State<MyApp> {
                     onPressed: MovementSdk.showDebugScreen,
                     child: const Text('Debug Screen'),
                   ),
+                  ElevatedButton(
+                    onPressed: _getDebugLogs,
+                    child: const Text('Debug Logs'),
+                  ),
                 ],
               ),
               const SizedBox(height: 16),
               Text('Enabled: ${_isEnabled ?? 'Unknown'}'),
               Text('Install ID: ${_installId ?? 'Unknown'}'),
               Text('Venue: ${_currentVenue ?? 'Unknown'}'),
+              if (_debugLogs != null) ...[
+                const SizedBox(height: 8),
+                Text(
+                  'Debug Logs (${_debugLogs!.length})',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ],
               if (_error != null) ...[
                 const SizedBox(height: 16),
                 Text(
@@ -150,6 +174,34 @@ class _MyAppState extends State<MyApp> {
                   style: const TextStyle(color: Colors.red),
                 ),
               ],
+              if (_debugLogs != null)
+                Expanded(
+                  child: ListView.separated(
+                    itemCount: _debugLogs!.length,
+                    separatorBuilder: (_, __) => const Divider(height: 1),
+                    itemBuilder: (context, index) {
+                      final log = _debugLogs![index];
+                      final time = DateTime.fromMillisecondsSinceEpoch(
+                        log.timestamp,
+                      );
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        child: Text(
+                          '[$time] [${log.level}] [${log.type}] ${log.message}',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontFamily: 'monospace',
+                            color: log.level == 'error'
+                                ? Colors.red
+                                : log.level == 'warn'
+                                    ? Colors.orange
+                                    : null,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
             ],
           ),
         ),

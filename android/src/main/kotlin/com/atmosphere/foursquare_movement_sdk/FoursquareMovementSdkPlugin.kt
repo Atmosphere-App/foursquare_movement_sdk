@@ -177,6 +177,33 @@ class FoursquareMovementSdkPlugin :
         MovementSdk.clearAllData(context)
     }
 
+    override fun getDebugLogs(callback: (Result<List<FSQDebugLogEntry>>) -> Unit) {
+        try {
+            val logs = MovementSdk.getDebugLogs()
+            val entries = logs.map { log ->
+                FSQDebugLogEntry(
+                    timestamp = log.timestamp,
+                    level = when (log.level) {
+                        com.foursquare.movement.LogLevel.DEBUG -> "debug"
+                        com.foursquare.movement.LogLevel.INFO -> "info"
+                        com.foursquare.movement.LogLevel.WARN -> "warn"
+                        com.foursquare.movement.LogLevel.ERROR -> "error"
+                        else -> "debug"
+                    },
+                    type = "general",
+                    message = log.notes ?: ""
+                )
+            }
+            callback(Result.success(entries))
+        } catch (e: Exception) {
+            callback(Result.failure(e))
+        }
+    }
+
+    override fun clearDebugLogs() {
+        MovementSdk.clearDebugLogs()
+    }
+
     override fun getActiveVisit(callback: (Result<FSQVisit?>) -> Unit) {
         executor.execute {
             val visit = MovementSdk.get().getCurrentVisit(context)

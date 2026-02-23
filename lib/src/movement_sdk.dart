@@ -20,7 +20,8 @@ export 'generated/movement_sdk_api.g.dart'
         FSQConfidenceLevel,
         FSQGeofenceEventType,
         FSQGeofenceEvent,
-        FSQCurrentLocation;
+        FSQCurrentLocation,
+        FSQDebugLogEntry;
 
 class _MovementSdkFlutterApiHandler extends MovementSdkFlutterApi {
   final StreamController<FSQVisit> _visitController =
@@ -194,4 +195,15 @@ class MovementSdk {
   /// exit, and presence events.
   static Stream<List<FSQGeofenceEvent>> get onGeofenceEvents =>
       _handler._geofenceController.stream;
+
+  /// Returns recent debug log entries collected by the native SDK.
+  ///
+  /// Requires debug logging to be enabled natively
+  /// (`isDebugLogsEnabled` on iOS, `setEnableDebugLogs` on Android).
+  /// On iOS, entries include a [FSQDebugLogEntry.type] field that
+  /// distinguishes network, location, geofence, and other log sources.
+  static Future<List<FSQDebugLogEntry>> getDebugLogs() => _api.getDebugLogs();
+
+  /// Clears the native SDK's debug log buffer.
+  static Future<void> clearDebugLogs() => _api.clearDebugLogs();
 }

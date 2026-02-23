@@ -205,6 +205,29 @@ class FSQCurrentLocation {
   final List<FSQGeofenceEvent> matchedGeofences;
 }
 
+/// A single entry from the native SDK's debug log buffer.
+class FSQDebugLogEntry {
+  FSQDebugLogEntry({
+    required this.timestamp,
+    required this.level,
+    required this.type,
+    required this.message,
+  });
+
+  /// Milliseconds since epoch when the log was recorded.
+  final int timestamp;
+
+  /// Severity: "debug", "info", "warn", or "error".
+  final String level;
+
+  /// Log source category. iOS provides granular types ("network", "location",
+  /// "geofence", etc.); Android always returns "general".
+  final String type;
+
+  /// Human-readable description of the event.
+  final String message;
+}
+
 /// Host API for Movement SDK operations.
 /// Implemented by the native platform (iOS/Android).
 @HostApi()
@@ -254,6 +277,16 @@ abstract class MovementSdkHostApi {
   /// Returns the currently active visit, or null if there is no active visit.
   @async
   FSQVisit? getActiveVisit();
+
+  /// Returns recent debug log entries collected by the native SDK.
+  ///
+  /// Requires debug logging to be enabled natively
+  /// (`isDebugLogsEnabled` on iOS, `setEnableDebugLogs` on Android).
+  @async
+  List<FSQDebugLogEntry> getDebugLogs();
+
+  /// Clears the native SDK's debug log buffer.
+  void clearDebugLogs();
 }
 
 /// Flutter API for receiving real-time events from the native SDK.

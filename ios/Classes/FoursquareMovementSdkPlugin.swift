@@ -122,6 +122,23 @@ public class FoursquareMovementSdkPlugin: NSObject, FlutterPlugin, MovementSdkHo
     MovementSdkManager.shared.clearAllData(completion: nil)
   }
 
+  func getDebugLogs(completion: @escaping (Result<[FSQDebugLogEntry], any Error>) -> Void) {
+    let logs = MovementSdkManager.shared.debugLogs()
+    let entries = logs.map { log in
+      FSQDebugLogEntry(
+        timestamp: Int64(log.timestamp.timeIntervalSince1970 * 1000),
+        level: levelString(log.level),
+        type: logTypeString(log.type),
+        message: log.eventDescription
+      )
+    }
+    completion(.success(entries))
+  }
+
+  func clearDebugLogs() throws {
+    MovementSdkManager.shared.deleteDebugLogs()
+  }
+
   func getActiveVisit(completion: @escaping (Result<FSQVisit?, any Error>) -> Void) {
     MovementSdkManager.shared.getCurrentLocation { currentLocation, error in
       guard let currentLocation = currentLocation, error == nil else {
@@ -275,5 +292,31 @@ public class FoursquareMovementSdkPlugin: NSObject, FlutterPlugin, MovementSdkHo
       latitude: location.coordinate.latitude,
       longitude: location.coordinate.longitude
     )
+  }
+
+  // MARK: - Debug Log Helpers
+
+  private func levelString(_ level: MovementSdk.DebugLog.Level) -> String {
+    switch level {
+    case .debug: return "debug"
+    case .info: return "info"
+    case .warn: return "warn"
+    case .error: return "error"
+    @unknown default: return "debug"
+    }
+  }
+
+  private func logTypeString(_ type: MovementSdk.DebugLog.LogType) -> String {
+    switch type {
+    case .general: return "general"
+    case .battery: return "battery"
+    case .location: return "location"
+    case .network: return "network"
+    case .persistence: return "persistence"
+    case .stopDetection: return "stopDetection"
+    case .assertion: return "assertion"
+    case .geofence: return "geofence"
+    @unknown default: return "general"
+    }
   }
 }

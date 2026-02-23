@@ -562,6 +562,54 @@ data class FSQCurrentLocation (
 
   override fun hashCode(): Int = toList().hashCode()
 }
+
+/**
+ * A single entry from the native SDK's debug log buffer.
+ *
+ * Generated class from Pigeon that represents data sent in messages.
+ */
+data class FSQDebugLogEntry (
+  /** Milliseconds since epoch when the log was recorded. */
+  val timestamp: Long,
+  /** Severity: "debug", "info", "warn", or "error". */
+  val level: String,
+  /**
+   * Log source category. iOS provides granular types ("network", "location",
+   * "geofence", etc.); Android always returns "general".
+   */
+  val type: String,
+  /** Human-readable description of the event. */
+  val message: String
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): FSQDebugLogEntry {
+      val timestamp = pigeonVar_list[0] as Long
+      val level = pigeonVar_list[1] as String
+      val type = pigeonVar_list[2] as String
+      val message = pigeonVar_list[3] as String
+      return FSQDebugLogEntry(timestamp, level, type, message)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      timestamp,
+      level,
+      type,
+      message,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other !is FSQDebugLogEntry) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    return MovementSdkApiPigeonUtils.deepEquals(toList(), other.toList())  }
+
+  override fun hashCode(): Int = toList().hashCode()
+}
 private open class MovementSdkApiPigeonCodec : StandardMessageCodec() {
   override fun readValueOfType(type: Byte, buffer: ByteBuffer): Any? {
     return when (type) {
@@ -630,6 +678,11 @@ private open class MovementSdkApiPigeonCodec : StandardMessageCodec() {
           FSQCurrentLocation.fromList(it)
         }
       }
+      142.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
+          FSQDebugLogEntry.fromList(it)
+        }
+      }
       else -> super.readValueOfType(type, buffer)
     }
   }
@@ -687,6 +740,10 @@ private open class MovementSdkApiPigeonCodec : StandardMessageCodec() {
         stream.write(141)
         writeValue(stream, value.toList())
       }
+      is FSQDebugLogEntry -> {
+        stream.write(142)
+        writeValue(stream, value.toList())
+      }
       else -> super.writeValue(stream, value)
     }
   }
@@ -733,6 +790,15 @@ interface MovementSdkHostApi {
   fun clearAllData()
   /** Returns the currently active visit, or null if there is no active visit. */
   fun getActiveVisit(callback: (Result<FSQVisit?>) -> Unit)
+  /**
+   * Returns recent debug log entries collected by the native SDK.
+   *
+   * Requires debug logging to be enabled natively
+   * (`isDebugLogsEnabled` on iOS, `setEnableDebugLogs` on Android).
+   */
+  fun getDebugLogs(callback: (Result<List<FSQDebugLogEntry>>) -> Unit)
+  /** Clears the native SDK's debug log buffer. */
+  fun clearDebugLogs()
 
   companion object {
     /** The codec used by MovementSdkHostApi. */
@@ -949,6 +1015,40 @@ interface MovementSdkHostApi {
                 reply.reply(MovementSdkApiPigeonUtils.wrapResult(data))
               }
             }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.foursquare_movement_sdk.MovementSdkHostApi.getDebugLogs$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            api.getDebugLogs{ result: Result<List<FSQDebugLogEntry>> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(MovementSdkApiPigeonUtils.wrapError(error))
+              } else {
+                val data = result.getOrNull()
+                reply.reply(MovementSdkApiPigeonUtils.wrapResult(data))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.foursquare_movement_sdk.MovementSdkHostApi.clearDebugLogs$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            val wrapped: List<Any?> = try {
+              api.clearDebugLogs()
+              listOf(null)
+            } catch (exception: Throwable) {
+              MovementSdkApiPigeonUtils.wrapError(exception)
+            }
+            reply.reply(wrapped)
           }
         } else {
           channel.setMessageHandler(null)
