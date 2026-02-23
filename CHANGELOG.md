@@ -1,3 +1,8 @@
+## 0.1.0
+
+* Add `getDebugLogs()` to retrieve native SDK debug log entries
+* Add `clearDebugLogs()` to clear the native SDK debug log buffer
+
 ## 0.0.1
 
 * Initial release of the Foursquare Movement SDK Flutter plugin

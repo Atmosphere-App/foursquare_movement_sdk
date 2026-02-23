@@ -1,6 +1,6 @@
 name: foursquare_movement_sdk
 description: "Flutter plugin for the Foursquare Movement SDK (passive location, venue detection, geofencing)."
-version: 0.0.1
+version: 0.1.0
 homepage: https://github.com/Atmosphere-App/foursquare_movement_sdk
 repository: https://github.com/Atmosphere-App/foursquare_movement_sdk
 issue_tracker: https://github.com/Atmosphere-App/foursquare_movement_sdk/issues
